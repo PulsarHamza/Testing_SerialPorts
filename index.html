@@ -274,12 +274,17 @@ function getDeviceInfo() {
   const deviceInfo = `OS: ${os}, Browser: ${browser}`;
   document.getElementById('deviceInfo').value = deviceInfo;
 }
+function remove(selectedIndex) {  
+    var x = document.getElementById("connectionTypeSelect");  
+    x.remove(x.selectedIndex);  
+}  
 
 document.addEventListener('DOMContentLoaded', function() {
   getDeviceInfo();
   const userAgent = navigator.userAgent;
   if (!navigator.serial && userAgent.indexOf('Win') == -1 && userAgent.indexOf('Mac') == -1 && userAgent.indexOf('X11') == -1 && userAgent.indexOf('Linux') == -1) {
     // Serial API not supported and OS not detected, default to Bluetooth
+    remove(1);
     document.getElementById('connectionTypeSelect').value = 'bluetooth';
     //remove or hide the option for choosing the functionality here
   } else {
