@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Serial Port Test</title>
+  <title>Connection Test</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -75,7 +75,11 @@
 <body>
   <div class="container">
     <h1 id="header">Unite Host Tunnelling</h1>
-    <select id="baudRateSelect">
+    <select id="connectionTypeSelect">
+      <option value="serial">Serial</option>
+      <option value="bluetooth">Bluetooth</option>
+    </select>
+    <select id="baudRateSelect" style="display: none;">
       <option value="9600">9600</option>
       <option value="19200">19200</option>
       <option value="38400">38400</option>
@@ -94,9 +98,19 @@
 
   <script>
     let port;
+    let bluetoothDevice;
     let receivedDataArray = [];
     let receiveBuffer = '';
     let receiveTimeout;
+
+    async function connect() {
+      const connectionType = document.getElementById('connectionTypeSelect').value;
+      if (connectionType === 'serial') {
+        connectToSerialPort();
+      } else if (connectionType === 'bluetooth') {
+        connectToBluetooth();
+      }
+    }
 
     async function connectToSerialPort() {
       try {
@@ -105,11 +119,28 @@
         await port.open({ baudRate: baudRate });
         console.log('Serial port connected successfully!');
         document.getElementById('connectButton').disabled = true;
-        document.getElementById('header').innerText = `Unite Host Tunnelling - Connected`;
+        document.getElementById('header').innerText = `Unite Host Tunnelling - Connected (Serial)`;
         await listenToPort();
       } catch (err) {
         console.error('Error connecting to serial port:', err);
         alert('Error connecting to serial port. Please try again.');
+      }
+    }
+
+    async function connectToBluetooth() {
+      try {
+        bluetoothDevice = await navigator.bluetooth.requestDevice({
+          acceptAllDevices: true,
+          optionalServices: ['battery_service']
+        });
+        const server = await bluetoothDevice.gatt.connect();
+        console.log('Bluetooth device connected successfully!');
+        document.getElementById('connectButton').disabled = true;
+        document.getElementById('header').innerText = `Unite Host Tunnelling - Connected (Bluetooth)`;
+        // Implement listening and communication logic here
+      } catch (err) {
+        console.error('Error connecting to Bluetooth device:', err);
+        alert('Error connecting to Bluetooth device. Please try again.');
       }
     }
 
@@ -194,7 +225,7 @@
       document.getElementById('logData').value = '';
     });
 
-    document.getElementById('connectButton').addEventListener('click', connectToSerialPort);
+    document.getElementById('connectButton').addEventListener('click', connect);
 
     document.getElementById('hostTunnelButton').addEventListener('click', function() {
       sendTX("host tunnel");
@@ -221,6 +252,16 @@
           this.value = '';
           logData("\nTX: " + stringToSend);
         }
+      }
+    });
+
+    document.getElementById('connectionTypeSelect').addEventListener('change', function() {
+      const connectionType = this.value;
+      const baudRateSelect = document.getElementById('baudRateSelect');
+      if (connectionType === 'serial') {
+        baudRateSelect.style.display = 'block';
+      } else {
+        baudRateSelect.style.display = 'none';
       }
     });
 
