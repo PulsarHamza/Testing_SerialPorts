@@ -106,16 +106,21 @@ let receiveTimeout;
 async function connect() {
   const connectionType = document.getElementById('connectionTypeSelect').value;
   if (connectionType === 'serial') {
-    checkSerialSupport();
+    if (navigator.serial) {
+      await connectToSerialPort();
+    } else {
+      alert('Web Serial API not supported in this browser. Connecting via Bluetooth instead.');
+      await connectToBluetooth();
+    }
   } else if (connectionType === 'bluetooth') {
-    connectToBluetooth();
+    await connectToBluetooth();
   }
 }
 
 async function connectToSerialPort() {
   try {
     port = await navigator.serial.requestPort();
-    const baudRate = parseInt(document.getElementById('baudRateSelect').value);
+    const baudRate = 115200; // Set baud rate to 115200
     await port.open({ baudRate: baudRate });
     console.log('Serial port connected successfully!');
     document.getElementById('connectButton').disabled = true;
@@ -259,7 +264,6 @@ document.getElementById('connectionTypeSelect').addEventListener('change', funct
   const connectionType = this.value;
   const baudRateSelect = document.getElementById('baudRateSelect');
   if (connectionType === 'serial') {
-    checkSerialSupport();
     baudRateSelect.style.display = 'block';
   } else {
     baudRateSelect.style.display = 'none';
@@ -278,27 +282,17 @@ function getDeviceInfo() {
   document.getElementById('deviceInfo').value = deviceInfo;
 }
 
-function checkSerialSupport() {
-  if (!('serial' in navigator)) {
-    const connectButton = document.getElementById('connectButton');
-    connectButton.disabled = true;
-    alert('Web Serial API not supported in this browser. Please use a compatible browser. See https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API#browser_compatibility for more information.');
-  }
-}
-
 document.addEventListener('DOMContentLoaded', function() {
   getDeviceInfo();
-});
-
-document.getElementById('connectButton').addEventListener('click', function() {
-  const connectionType = document.getElementById('connectionTypeSelect').value;
-  if (connectionType === 'serial') {
-    connectToSerialPort();
-  } else if (connectionType === 'bluetooth') {
-    connectToBluetooth();
+  const userAgent = navigator.userAgent;
+  if (!navigator.serial && userAgent.indexOf('Win') == -1 && userAgent.indexOf('Mac') == -1 && userAgent.indexOf('X11') == -1 && userAgent.indexOf('Linux') == -1) {
+    // Serial API not supported and OS not detected, default to Bluetooth
+    document.getElementById('connectionTypeSelect').value = 'bluetooth';
+  } else {
+    // Serial API supported or OS detected, user can choose
+    document.getElementById('connectionTypeSelect').disabled = false;
   }
 });
-
   </script>
 </body>
 </html>
