@@ -79,13 +79,6 @@
       <option value="serial">Serial</option>
       <option value="bluetooth">Bluetooth</option>
     </select>
-    <select id="baudRateSelect" style="display: none;">
-      <option value="9600">9600</option>
-      <option value="19200">19200</option>
-      <option value="38400">38400</option>
-      <option value="57600">57600</option>
-      <option value="115200" selected>115200</option>
-    </select>
     <textarea id="sendData" rows="3" placeholder="Enter string to send" spellcheck="false"></textarea>
     <textarea id="logData" rows="10" readonly></textarea>
     <input type="text" id="deviceInfo" readonly>
@@ -288,6 +281,7 @@ document.addEventListener('DOMContentLoaded', function() {
   if (!navigator.serial && userAgent.indexOf('Win') == -1 && userAgent.indexOf('Mac') == -1 && userAgent.indexOf('X11') == -1 && userAgent.indexOf('Linux') == -1) {
     // Serial API not supported and OS not detected, default to Bluetooth
     document.getElementById('connectionTypeSelect').value = 'bluetooth';
+    //remove or hide the option for choosing the functionality here
   } else {
     // Serial API supported or OS detected, user can choose
     document.getElementById('connectionTypeSelect').disabled = false;
