@@ -284,14 +284,14 @@ document.addEventListener('DOMContentLoaded', function() {
   const userAgent = navigator.userAgent;
   if (!navigator.serial && userAgent.indexOf('Win') == -1 && userAgent.indexOf('Mac') == -1 && userAgent.indexOf('X11') == -1 && userAgent.indexOf('Linux') == -1) {
     // Serial API not supported and OS not detected, default to Bluetooth
-    remove(1);
-    document.getElementById('connectionTypeSelect').value = 'bluetooth';
-    //remove or hide the option for choosing the functionality here
+    document.getElementById('connectionTypeSelect').remove(); // Remove the connection type selector
+    // Optionally, you can hide any associated elements or messages related to the selector
   } else {
     // Serial API supported or OS detected, user can choose
     document.getElementById('connectionTypeSelect').disabled = false;
   }
 });
+
   </script>
 </body>
 </html>
