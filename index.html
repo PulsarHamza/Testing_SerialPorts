@@ -97,198 +97,208 @@
   </div>
 
   <script>
-    let port;
-    let bluetoothDevice;
-    let receivedDataArray = [];
-    let receiveBuffer = '';
-    let receiveTimeout;
+  let port;
+let bluetoothDevice;
+let receivedDataArray = [];
+let receiveBuffer = '';
+let receiveTimeout;
 
-    async function connect() {
-      const connectionType = document.getElementById('connectionTypeSelect').value;
-      if (connectionType === 'serial') {
-        connectToSerialPort();
-      } else if (connectionType === 'bluetooth') {
-        connectToBluetooth();
-      }
-    }
+async function connect() {
+  const connectionType = document.getElementById('connectionTypeSelect').value;
+  if (connectionType === 'serial') {
+    checkSerialSupport();
+  } else if (connectionType === 'bluetooth') {
+    connectToBluetooth();
+  }
+}
 
-    async function connectToSerialPort() {
-      try {
-        port = await navigator.serial.requestPort();
-        const baudRate = parseInt(document.getElementById('baudRateSelect').value);
-        await port.open({ baudRate: baudRate });
-        console.log('Serial port connected successfully!');
-        document.getElementById('connectButton').disabled = true;
-        document.getElementById('header').innerText = `Unite Host Tunnelling - Connected (Serial)`;
-        await listenToPort();
-      } catch (err) {
-        console.error('Error connecting to serial port:', err);
-        alert('Error connecting to serial port. Please try again.');
-      }
-    }
+async function connectToSerialPort() {
+  try {
+    port = await navigator.serial.requestPort();
+    const baudRate = parseInt(document.getElementById('baudRateSelect').value);
+    await port.open({ baudRate: baudRate });
+    console.log('Serial port connected successfully!');
+    document.getElementById('connectButton').disabled = true;
+    document.getElementById('header').innerText = `Unite Host Tunnelling - Connected (Serial)`;
+    await listenToPort();
+  } catch (err) {
+    console.error('Error connecting to serial port:', err);
+    alert('Error connecting to serial port. Please try again.');
+  }
+}
 
-    async function connectToBluetooth() {
-      try {
-        bluetoothDevice = await navigator.bluetooth.requestDevice({
-          acceptAllDevices: true,
-          optionalServices: ['battery_service']
-        });
-        const server = await bluetoothDevice.gatt.connect();
-        console.log('Bluetooth device connected successfully!');
-        document.getElementById('connectButton').disabled = true;
-        document.getElementById('header').innerText = `Unite Host Tunnelling - Connected (Bluetooth)`;
-        // Implement listening and communication logic here
-      } catch (err) {
-        console.error('Error connecting to Bluetooth device:', err);
-        alert('Error connecting to Bluetooth device. Please try again.');
-      }
-    }
-
-    async function sendTX(stringToSend) {
-      try {
-        if (!port) {
-          console.error('Serial port is not connected.');
-          return;
-        }
-        const writer = port.writable.getWriter();
-        if (stringToSend !== "+++") {
-          stringToSend += '\r\n';
-        }
-        const data = new TextEncoder().encode(stringToSend);
-        await writer.write(data);
-        console.log('Data sent:', stringToSend);
-        writer.releaseLock();
-        if (stringToSend.trim() === "SENDPART1") {
-          receivedDataArray = [];
-        }
-      } catch (error) {
-        console.error('Error sending data:', error);
-        alert('Error sending data. Please check the connection and try again.');
-      }
-    }
-
-    async function listenToPort() {
-      const reader = port.readable.getReader();
-      try {
-        while (true) {
-          const { value, done } = await reader.read();
-          if (done) {
-            console.log('[readLoop] DONE');
-            break;
-          }
-          if (value) {
-            const receivedString = new TextDecoder('utf-8').decode(value);
-            receiveBuffer += receivedString;
-            clearTimeout(receiveTimeout);
-            receiveTimeout = setTimeout(processReceivedData, 50);
-            if (receiveBuffer.endsWith('\r')) {
-              processReceivedData();
-            }
-          }
-        }
-      } catch (error) {
-        console.error('[readLoop] ERROR', error);
-        alert('Error receiving data. Please check the connection and try again.');
-      } finally {
-        reader.releaseLock();
-      }
-    }
-
-    function processReceivedData() {
-      const hex_array = convertStringToFloatArray(receiveBuffer);
-      logData("\nRX (hex): " + hex_array);
-      logData("\nRX (ascii): " + receiveBuffer);
-      receiveBuffer = '';
-    }
-
-    function convertStringToFloatArray(hexString) {
-      var floatArray = [];
-      for (var i = 0; i < hexString.length; i += 8) {
-        var hexFloat = hexString.substring(i, i + 8);
-        floatArray.push(hexToFloat(hexFloat));
-      }
-      return floatArray;
-    }
-
-    function hexToFloat(hex) {
-      var view = new DataView(new ArrayBuffer(4));
-      view.setUint32(0, parseInt(hex, 16), false);
-      return view.getFloat32(0, false);
-    }
-
-    function logData(data) {
-      const logTextarea = document.getElementById('logData');
-      logTextarea.value += data;
-    }
-
-    document.getElementById('clearButton').addEventListener('click', function() {
-      document.getElementById('logData').value = '';
+async function connectToBluetooth() {
+  try {
+    bluetoothDevice = await navigator.bluetooth.requestDevice({
+      acceptAllDevices: true,
+      optionalServices: ['battery_service']
     });
+    const server = await bluetoothDevice.gatt.connect();
+    console.log('Bluetooth device connected successfully!');
+    document.getElementById('connectButton').disabled = true;
+    document.getElementById('header').innerText = `Unite Host Tunnelling - Connected (Bluetooth)`;
+    // Implement listening and communication logic here
+  } catch (err) {
+    console.error('Error connecting to Bluetooth device:', err);
+    alert('Error connecting to Bluetooth device. Please try again.');
+  }
+}
 
-    document.getElementById('connectButton').addEventListener('click', connect);
-
-    document.getElementById('hostTunnelButton').addEventListener('click', function() {
-      sendTX("host tunnel");
-      const hostTunnelButton = document.getElementById('hostTunnelButton');
-      hostTunnelButton.disabled = true;
-      hostTunnelButton.classList.remove('reset');
-      hostTunnelButton.classList.add('disabled');
-    });
-
-    function sendDisconnectCommand() {
-      sendTX("+++");
-      const hostTunnelButton = document.getElementById('hostTunnelButton');
-      hostTunnelButton.disabled = false;
-      hostTunnelButton.classList.remove('disabled');
-      hostTunnelButton.classList.add('reset');
+async function sendTX(stringToSend) {
+  try {
+    if (!port) {
+      console.error('Serial port is not connected.');
+      return;
     }
+    const writer = port.writable.getWriter();
+    if (stringToSend !== "+++") {
+      stringToSend += '\r\n';
+    }
+    const data = new TextEncoder().encode(stringToSend);
+    await writer.write(data);
+    console.log('Data sent:', stringToSend);
+    writer.releaseLock();
+    if (stringToSend.trim() === "SENDPART1") {
+      receivedDataArray = [];
+    }
+  } catch (error) {
+    console.error('Error sending data:', error);
+    alert('Error sending data. Please check the connection and try again.');
+  }
+}
 
-    document.getElementById('sendData').addEventListener('keypress', function(event) {
-      if (event.key === 'Enter') {
-        event.preventDefault();
-        const stringToSend = this.value.trim();
-        if (stringToSend !== '') {
-          sendTX(stringToSend);
-          this.value = '';
-          logData("\nTX: " + stringToSend);
+async function listenToPort() {
+  const reader = port.readable.getReader();
+  try {
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) {
+        console.log('[readLoop] DONE');
+        break;
+      }
+      if (value) {
+        const receivedString = new TextDecoder('utf-8').decode(value);
+        receiveBuffer += receivedString;
+        clearTimeout(receiveTimeout);
+        receiveTimeout = setTimeout(processReceivedData, 50);
+        if (receiveBuffer.endsWith('\r')) {
+          processReceivedData();
         }
       }
-    });
-
-    document.getElementById('connectionTypeSelect').addEventListener('change', function() {
-      const connectionType = this.value;
-      const baudRateSelect = document.getElementById('baudRateSelect');
-      if (connectionType === 'serial') {
-        baudRateSelect.style.display = 'block';
-      } else {
-        baudRateSelect.style.display = 'none';
-      }
-    });
-
-    function getDeviceInfo() {
-      const userAgent = navigator.userAgent;
-      let os = 'Unknown OS';
-      if (userAgent.indexOf('Win') != -1) os = 'Windows';
-      if (userAgent.indexOf('Mac') != -1) os = 'MacOS';
-      if (userAgent.indexOf('X11') != -1) os = 'UNIX';
-      if (userAgent.indexOf('Linux') != -1) os = 'Linux';
-      const browser = navigator.userAgent;
-      const deviceInfo = `OS: ${os}, Browser: ${browser}`;
-      document.getElementById('deviceInfo').value = deviceInfo;
     }
+  } catch (error) {
+    console.error('[readLoop] ERROR', error);
+    alert('Error receiving data. Please check the connection and try again.');
+  } finally {
+    reader.releaseLock();
+  }
+}
 
-    function checkSerialSupport() {
-      if (!('serial' in navigator)) {
-        const connectButton = document.getElementById('connectButton');
-        connectButton.disabled = true;
-        alert('Web Serial API not supported in this browser. Please use a compatible browser. See https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API#browser_compatibility for more information.');
-      }
+function processReceivedData() {
+  const hex_array = convertStringToFloatArray(receiveBuffer);
+  logData("\nRX (hex): " + hex_array);
+  logData("\nRX (ascii): " + receiveBuffer);
+  receiveBuffer = '';
+}
+
+function convertStringToFloatArray(hexString) {
+  var floatArray = [];
+  for (var i = 0; i < hexString.length; i += 8) {
+    var hexFloat = hexString.substring(i, i + 8);
+    floatArray.push(hexToFloat(hexFloat));
+  }
+  return floatArray;
+}
+
+function hexToFloat(hex) {
+  var view = new DataView(new ArrayBuffer(4));
+  view.setUint32(0, parseInt(hex, 16), false);
+  return view.getFloat32(0, false);
+}
+
+function logData(data) {
+  const logTextarea = document.getElementById('logData');
+  logTextarea.value += data;
+}
+
+document.getElementById('clearButton').addEventListener('click', function() {
+  document.getElementById('logData').value = '';
+});
+
+document.getElementById('connectButton').addEventListener('click', connect);
+
+document.getElementById('hostTunnelButton').addEventListener('click', function() {
+  sendTX("host tunnel");
+  const hostTunnelButton = document.getElementById('hostTunnelButton');
+  hostTunnelButton.disabled = true;
+  hostTunnelButton.classList.remove('reset');
+  hostTunnelButton.classList.add('disabled');
+});
+
+function sendDisconnectCommand() {
+  sendTX("+++");
+  const hostTunnelButton = document.getElementById('hostTunnelButton');
+  hostTunnelButton.disabled = false;
+  hostTunnelButton.classList.remove('disabled');
+  hostTunnelButton.classList.add('reset');
+}
+
+document.getElementById('sendData').addEventListener('keypress', function(event) {
+  if (event.key === 'Enter') {
+    event.preventDefault();
+    const stringToSend = this.value.trim();
+    if (stringToSend !== '') {
+      sendTX(stringToSend);
+      this.value = '';
+      logData("\nTX: " + stringToSend);
     }
+  }
+});
 
-    document.addEventListener('DOMContentLoaded', function() {
-      getDeviceInfo();
-      checkSerialSupport();
-    });
+document.getElementById('connectionTypeSelect').addEventListener('change', function() {
+  const connectionType = this.value;
+  const baudRateSelect = document.getElementById('baudRateSelect');
+  if (connectionType === 'serial') {
+    checkSerialSupport();
+    baudRateSelect.style.display = 'block';
+  } else {
+    baudRateSelect.style.display = 'none';
+  }
+});
+
+function getDeviceInfo() {
+  const userAgent = navigator.userAgent;
+  let os = 'Unknown OS';
+  if (userAgent.indexOf('Win') != -1) os = 'Windows';
+  if (userAgent.indexOf('Mac') != -1) os = 'MacOS';
+  if (userAgent.indexOf('X11') != -1) os = 'UNIX';
+  if (userAgent.indexOf('Linux') != -1) os = 'Linux';
+  const browser = navigator.userAgent;
+  const deviceInfo = `OS: ${os}, Browser: ${browser}`;
+  document.getElementById('deviceInfo').value = deviceInfo;
+}
+
+function checkSerialSupport() {
+  if (!('serial' in navigator)) {
+    const connectButton = document.getElementById('connectButton');
+    connectButton.disabled = true;
+    alert('Web Serial API not supported in this browser. Please use a compatible browser. See https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API#browser_compatibility for more information.');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  getDeviceInfo();
+});
+
+document.getElementById('connectButton').addEventListener('click', function() {
+  const connectionType = document.getElementById('connectionTypeSelect').value;
+  if (connectionType === 'serial') {
+    connectToSerialPort();
+  } else if (connectionType === 'bluetooth') {
+    connectToBluetooth();
+  }
+});
+
   </script>
 </body>
 </html>
