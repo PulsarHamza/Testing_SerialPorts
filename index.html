@@ -75,7 +75,7 @@
 <body>
   <div class="container">
     <h1 id="header">Unite Host Tunnelling v0.0.1b</h1>
-    <img id="connectionImage" src="img/USB.png" onclick="toggle_connection_type()" alt="Connection Type" width="100">
+    <img id="connectionImage" src="img/USB.svg" onclick="toggle_connection_type()" alt="Connection Type" width="100">
     <textarea id="sendData" rows="3" placeholder="Enter string to send" spellcheck="false"></textarea>
     <textarea id="logData" rows="10" readonly></textarea>
     <input type="text" id="deviceInfo" readonly>
@@ -192,10 +192,10 @@ async function listenToPort() {
 function toggle_connection_type() {
   if (connectionType === 'serial') {
     connectionType = 'bluetooth';
-    document.getElementById('connectionImage').src = "img/Bluetooth.png";
+    document.getElementById('connectionImage').src = "img/Bluetooth.svg";
   } else {
     connectionType = 'serial';
-    document.getElementById('connectionImage').src = "img/USB.png";
+    document.getElementById('connectionImage').src = "img/USB.svg";
   }
 }
 
