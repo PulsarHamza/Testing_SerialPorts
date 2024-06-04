@@ -75,9 +75,7 @@
 <body>
   <div class="container">
     <h1 id="header">Unite Host Tunnelling v0.0.1b</h1>
-    <div id="connectionTypeSelect">
-      <img id="connectionImage" src="img/USB.png" onclick="toggle_connection_type()" alt="Connection Type" width="100">
-    </div>
+    <img id="connectionImage" src="img/USB.png" onclick="toggle_connection_type()" alt="Connection Type" width="100">
     <textarea id="sendData" rows="3" placeholder="Enter string to send" spellcheck="false"></textarea>
     <textarea id="logData" rows="10" readonly></textarea>
     <input type="text" id="deviceInfo" readonly>
@@ -279,10 +277,10 @@ document.addEventListener('DOMContentLoaded', function() {
   const userAgent = navigator.userAgent;
   if (!navigator.serial && userAgent.indexOf('Win') == -1 && userAgent.indexOf('Mac') == -1 && userAgent.indexOf('X11') == -1 && userAgent.indexOf('Linux') == -1) {
     // Serial API not supported and OS not detected, default to Bluetooth
-    document.getElementById('connectionTypeSelect').remove(); // Remove the connection type selector
+    document.getElementById("connectionImage").style.visibility = "hidden";  // Remove the connection image
   } else {
     // Serial API supported or OS detected, user can choose
-    document.getElementById('connectionTypeSelect').style.display = 'block';
+    document.getElementById('connectionImage').style.display = 'block';
   }
 });
   </script>
