@@ -272,16 +272,16 @@ function getDeviceInfo() {
   document.getElementById('deviceInfo').value = deviceInfo;
 }
 
+function checkSerialSupport() {
+      if (!('serial' in navigator)) {
+        document.getElementById("connectionImage").style.visibility = "hidden";
+        alert('Web Serial API not supported in this browser. Please use a compatible browser. See https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API#browser_compatibility for more information.');
+      }
+    }
+
 document.addEventListener('DOMContentLoaded', function() {
   getDeviceInfo();
-  const userAgent = navigator.userAgent;
-  if (!navigator.serial && userAgent.indexOf('Win') == -1 && userAgent.indexOf('Mac') == -1 && userAgent.indexOf('X11') == -1 && userAgent.indexOf('Linux') == -1) {
-    // Serial API not supported and OS not detected, default to Bluetooth
-    document.getElementById("connectionImage").style.visibility = "hidden";  // Remove the connection image
-  } else {
-    // Serial API supported or OS detected, user can choose
-    document.getElementById('connectionImage').style.display = 'block';
-  }
+  checkSerialSupport();
 });
   </script>
 </body>
