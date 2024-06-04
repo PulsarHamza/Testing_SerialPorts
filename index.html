@@ -74,11 +74,10 @@
 </head>
 <body>
   <div class="container">
-    <h1 id="header">Unite Host Tunnelling</h1>
-    <select id="connectionTypeSelect">
-      <option value="serial">Serial</option>
-      <option value="bluetooth">Bluetooth</option>
-    </select>
+    <h1 id="header">Unite Host Tunnelling v0.0.1b</h1>
+    <div id="connectionTypeSelect">
+      <img id="connectionImage" src="img/USB.png" onclick="toggle_connection_type()" alt="Connection Type" width="100">
+    </div>
     <textarea id="sendData" rows="3" placeholder="Enter string to send" spellcheck="false"></textarea>
     <textarea id="logData" rows="10" readonly></textarea>
     <input type="text" id="deviceInfo" readonly>
@@ -95,9 +94,9 @@ let bluetoothDevice;
 let receivedDataArray = [];
 let receiveBuffer = '';
 let receiveTimeout;
+let connectionType = 'serial';
 
 async function connect() {
-  const connectionType = document.getElementById('connectionTypeSelect').value;
   if (connectionType === 'serial') {
     if (navigator.serial) {
       await connectToSerialPort();
@@ -192,6 +191,16 @@ async function listenToPort() {
   }
 }
 
+function toggle_connection_type() {
+  if (connectionType === 'serial') {
+    connectionType = 'bluetooth';
+    document.getElementById('connectionImage').src = "img/Bluetooth.png";
+  } else {
+    connectionType = 'serial';
+    document.getElementById('connectionImage').src = "img/USB.png";
+  }
+}
+
 function processReceivedData() {
   const hex_array = convertStringToFloatArray(receiveBuffer);
   logData("\nRX (hex): " + hex_array);
@@ -253,16 +262,6 @@ document.getElementById('sendData').addEventListener('keypress', function(event)
   }
 });
 
-document.getElementById('connectionTypeSelect').addEventListener('change', function() {
-  const connectionType = this.value;
-  const baudRateSelect = document.getElementById('baudRateSelect');
-  if (connectionType === 'serial') {
-    baudRateSelect.style.display = 'block';
-  } else {
-    baudRateSelect.style.display = 'none';
-  }
-});
-
 function getDeviceInfo() {
   const userAgent = navigator.userAgent;
   let os = 'Unknown OS';
@@ -274,10 +273,6 @@ function getDeviceInfo() {
   const deviceInfo = `OS: ${os}, Browser: ${browser}`;
   document.getElementById('deviceInfo').value = deviceInfo;
 }
-function remove(selectedIndex) {  
-    var x = document.getElementById("connectionTypeSelect");  
-    x.remove(x.selectedIndex);  
-}  
 
 document.addEventListener('DOMContentLoaded', function() {
   getDeviceInfo();
@@ -285,13 +280,11 @@ document.addEventListener('DOMContentLoaded', function() {
   if (!navigator.serial && userAgent.indexOf('Win') == -1 && userAgent.indexOf('Mac') == -1 && userAgent.indexOf('X11') == -1 && userAgent.indexOf('Linux') == -1) {
     // Serial API not supported and OS not detected, default to Bluetooth
     document.getElementById('connectionTypeSelect').remove(); // Remove the connection type selector
-    // Optionally, you can hide any associated elements or messages related to the selector
   } else {
     // Serial API supported or OS detected, user can choose
-    document.getElementById('connectionTypeSelect').disabled = false;
+    document.getElementById('connectionTypeSelect').style.display = 'block';
   }
 });
-
   </script>
 </body>
 </html>
