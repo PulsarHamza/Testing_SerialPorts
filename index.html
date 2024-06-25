@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>XML File Generation and Download Example</title>
+<title>Download XML File Example</title>
 <style>
   .button {
     display: inline-block;
@@ -21,64 +21,29 @@
 </style>
 </head>
 <body>
-  <h2>Generate and Download XML File Example</h2>
+  <h2>Download XML File Example</h2>
   
-  <button type="button" class="button" onclick="defaultXML_edit();">Generate and Download XML</button>
+  <button type="button" class="button" onclick="downloadXML();">Download XML File</button>
 
   <script>
-    function defaultXML_edit() {
-      // Simulate fetching XML data (you can replace with actual fetch call)
-      const xmlText = `<?xml version="1.0" encoding="UTF-8"?>
-        <Parameters>
-          <Parameter>
-            <Index>1</Index>
-            <Value>10.12345</Value>
-          </Parameter>
-          <Parameter>
-            <Index>2</Index>
-            <Value>20.6789</Value>
-          </Parameter>
-        </Parameters>`;
+    function downloadXML() {
+      const form = document.createElement('form');
+      form.style.display = 'none'; // Hide the form
 
-      const parser = new DOMParser();
-      const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+      // Specify the URL of the XML file to download
+      form.action = './xml/sample.xml'; // Replace with your XML file URL
 
-      const parametersList = xmlDoc.getElementsByTagName("Parameter");
+      // Set method as 'GET' or 'POST' depending on your server setup
+      form.method = 'GET';
 
-      // Update parameters with new values (dummy example)
-      for (let i = 0; i < parametersList.length; i++) {
-        const parameterNode = parametersList[i];
-        const value = Number(parameterNode.getElementsByTagName("Value")[0].textContent);
-        parameterNode.getElementsByTagName("Value")[0].textContent = value.toFixed(3).toString();
-      }
+      // Append the form to the document body
+      document.body.appendChild(form);
 
-      // Convert XML back to text
-      const serializer = new XMLSerializer();
-      const updatedXmlText = serializer.serializeToString(xmlDoc);
+      // Submit the form
+      form.submit();
 
-      // Download the updated XML file
-      downloadFile(updatedXmlText, "updated_xml.xml", "text/xml");
-    }
-
-    function downloadFile(data, filename, type) {
-      try {
-        // Create a data URI
-        const dataURI = `data:${type};charset=utf-8,${encodeURIComponent(data)}`;
-
-        // Create a temporary <a> element
-        const a = document.createElement('a');
-        a.href = dataURI;
-        a.download = filename;
-
-        // Append <a> to the body and programmatically click it
-        document.body.appendChild(a);
-        a.click();
-
-        // Clean up: remove <a> from body
-        document.body.removeChild(a);
-      } catch (error) {
-        alert(`Error in downloadFile: ${error.message}`);
-      }
+      // Clean up: remove the form from the body after submission
+      document.body.removeChild(form);
     }
   </script>
 </body>
