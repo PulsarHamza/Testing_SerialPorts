@@ -61,30 +61,20 @@
     }
 
     function downloadFile(data, filename, type) {
-      const blob = new Blob([data], { type: type });
+      // Create a data URI
+      const dataURI = `data:${type};charset=utf-8,${encodeURIComponent(data)}`;
 
-      // Check if the browser supports the 'download' attribute
-      if ('download' in document.createElement('a')) {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        a.style.display = 'none';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      } else {
-        // Fallback for older browsers
-        const blobUrl = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = blobUrl;
-        link.target = '_blank';
-        link.setAttribute('download', filename);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }
+      // Create a temporary <a> element
+      const a = document.createElement('a');
+      a.href = dataURI;
+      a.download = filename;
+
+      // Append <a> to the body and programmatically click it
+      document.body.appendChild(a);
+      a.click();
+
+      // Clean up: remove <a> from body
+      document.body.removeChild(a);
     }
   </script>
 </body>
