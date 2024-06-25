@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Download XML File Example</title>
+<title>Fetch, Edit, Cache, and Download XML Example</title>
 <style>
   .button {
     display: inline-block;
@@ -21,29 +21,76 @@
 </style>
 </head>
 <body>
-  <h2>Download XML File Example</h2>
+  <h2>Fetch, Edit, Cache, and Download XML Example</h2>
   
-  <button type="button" class="button" onclick="downloadXML();">Download XML File</button>
+  <button type="button" class="button" onclick="fetchAndCacheXML();">Fetch and Cache XML</button>
+  <button type="button" class="button" onclick="downloadEditedXML();">Download Edited XML</button>
 
   <script>
-    function downloadXML() {
-      const form = document.createElement('form');
-      form.style.display = 'none'; // Hide the form
+    // Function to fetch XML, edit it, and cache in local storage
+    function fetchAndCacheXML() {
+      const xmlUrl = './xml/sample.xml'; // Replace with your XML file URL
 
-      // Specify the URL of the XML file to download
-      form.action = './xml/sample.xml'; // Replace with your XML file URL
+      fetch(xmlUrl)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.text();
+        })
+        .then(xmlText => {
+          // Edit the XML (add something random, for example)
+          const editedXML = addRandomContent(xmlText);
 
-      // Set method as 'GET' or 'POST' depending on your server setup
-      form.method = 'GET';
+          // Cache the edited XML in local storage
+          localStorage.setItem('editedXML', editedXML);
 
-      // Append the form to the document body
-      document.body.appendChild(form);
+          // Optionally display or use the edited XML
+          console.log('Edited XML:', editedXML);
+        })
+        .catch(error => {
+          console.error('Error fetching XML:', error);
+        });
+    }
 
-      // Submit the form
-      form.submit();
+    // Function to simulate editing the XML (add something random)
+    function addRandomContent(xmlText) {
+      // Example: Add a random attribute to the root element
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+      const rootElement = xmlDoc.documentElement;
 
-      // Clean up: remove the form from the body after submission
-      document.body.removeChild(form);
+      // Example: Add a random attribute 'randomAttr'
+      const randomValue = Math.random().toString(36).substring(7);
+      rootElement.setAttribute('randomAttr', randomValue);
+
+      // Serialize XML back to string
+      const serializer = new XMLSerializer();
+      const editedXML = serializer.serializeToString(xmlDoc);
+      
+      return editedXML;
+    }
+
+    // Function to download the edited XML from local storage
+    function downloadEditedXML() {
+      const editedXML = localStorage.getItem('editedXML');
+
+      if (editedXML) {
+        const blob = new Blob([editedXML], { type: 'text/xml' });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'edited_xml.xml'; // Specify the file name here
+
+        document.body.appendChild(a);
+        a.click();
+
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } else {
+        console.error('Edited XML not found in local storage.');
+      }
     }
   </script>
 </body>
