@@ -1,288 +1,87 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Connection Test</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #53Af3B;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-    .container {
-      background-color: #fff;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      padding: 20px;
-      width: 90%;
-      max-width: 400px;
-      text-align: center;
-    }
-    h1 {
-      margin-bottom: 20px;
-      color: #333;
-    }
-    textarea, input[type="text"] {
-      margin-bottom: 30px;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      width: 100%;
-      box-sizing: border-box;
-    }
-    button {
-      margin: 10px;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 5px;
-      background-color: #FFA500;
-      color: white;
-      cursor: pointer;
-    }
-    button:disabled {
-      background-color: #4CAF50;
-      cursor: not-allowed;
-    }
-    button.reset {
-      background-color: #FFA500;
-      cursor: pointer;
-    }
-    button:hover:not(:disabled) {
-      background-color: #4CAF50;
-    }
-    #picture {
-      margin-top: 20px;
-      width: 50%;
-      max-height: 100px;
-      max-width: 100px;
-      height: auto;
-      display: block;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    #hostTunnelButton.disabled {
-      background-color: #4CAF50;
-      cursor: not-allowed;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XML File Generation and Download Example</title>
+<style>
+  .button {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+    text-decoration: none;
+    text-align: center;
+    font-size: 16px;
+    margin-top: 20px;
+  }
+</style>
 </head>
 <body>
-  <div class="container">
-    <h1 id="header">Unite Host Tunnelling v0.0.2b</h1>
-    <img id="connectionImage" src="img/USB.svg" onclick="toggle_connection_type()" alt="Connection Type" width="100">
-    <textarea id="sendData" rows="3" placeholder="Enter string to send" spellcheck="false"></textarea>
-    <textarea id="logData" rows="10" readonly></textarea>
-    <input type="text" id="deviceInfo" readonly>
-    <button id="connectButton">Connect</button>
-    <button id="clearButton">Clear Log</button>
-    <button id="hostTunnelButton">Host Tunnel Mode</button>
-    <button id="disconnectButton" onclick="sendDisconnectCommand()">Disconnect Host Tunnel</button>
-    <img id="picture" src="pulsarlogo.jpg" alt="Placeholder Picture">
-  </div>
+  <h2>Generate and Download XML File Example</h2>
+  
+  <button type="button" class="button" onclick="defaultXML_edit();">Generate and Download XML</button>
 
   <script>
-  let port;
-let bluetoothDevice;
-let receivedDataArray = [];
-let receiveBuffer = '';
-let receiveTimeout;
-let connectionType = 'serial';
+    function defaultXML_edit() {
+      // Simulate fetching XML data (you can replace with actual fetch call)
+      const xmlText = `<?xml version="1.0" encoding="UTF-8"?>
+        <Parameters>
+          <Parameter>
+            <Index>1</Index>
+            <Value>10.12345</Value>
+          </Parameter>
+          <Parameter>
+            <Index>2</Index>
+            <Value>20.6789</Value>
+          </Parameter>
+        </Parameters>`;
 
-async function connect() {
-  if (connectionType === 'serial') {
-    if (navigator.serial) {
-      await connectToSerialPort();
-    } else {
-      alert('Web Serial API not supported in this browser. Connecting via Bluetooth instead.');
-      await connectToBluetooth();
-    }
-  } else if (connectionType === 'bluetooth') {
-    await connectToBluetooth();
-  }
-}
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(xmlText, "text/xml");
 
-async function connectToSerialPort() {
-  try {
-    port = await navigator.serial.requestPort();
-    const baudRate = 115200; // Set baud rate to 115200
-    await port.open({ baudRate: baudRate });
-    console.log('Serial port connected successfully!');
-    document.getElementById('connectButton').disabled = true;
-    document.getElementById('header').innerText = `Unite Host Tunnelling - Connected (Serial)`;
-    await listenToPort();
-  } catch (err) {
-    console.error('Error connecting to serial port:', err);
-    alert('Error connecting to serial port. Please try again.');
-  }
-}
+      const parametersList = xmlDoc.getElementsByTagName("Parameter");
 
-async function connectToBluetooth() {
-  try {
-    bluetoothDevice = await navigator.bluetooth.requestDevice({
-      acceptAllDevices: true,
-      optionalServices: ['battery_service']
-    });
-    const server = await bluetoothDevice.gatt.connect();
-    console.log('Bluetooth device connected successfully!');
-    document.getElementById('connectButton').disabled = true;
-    document.getElementById('header').innerText = `Unite Host Tunnelling - Connected (Bluetooth)`;
-    // Implement listening and communication logic here
-  } catch (err) {
-    console.error('Error connecting to Bluetooth device:', err);
-    alert('Error connecting to Bluetooth device. Please try again.');
-  }
-}
-
-async function sendTX(stringToSend) {
-  try {
-    if (!port) {
-      console.error('Serial port is not connected.');
-      return;
-    }
-    const writer = port.writable.getWriter();
-    if (stringToSend !== "+++") {
-      stringToSend += '\r\n';
-    }
-    const data = new TextEncoder().encode(stringToSend);
-    await writer.write(data);
-    console.log('Data sent:', stringToSend);
-    writer.releaseLock();
-    if (stringToSend.trim() === "SENDPART1") {
-      receivedDataArray = [];
-    }
-  } catch (error) {
-    console.error('Error sending data:', error);
-    alert('Error sending data. Please check the connection and try again.');
-  }
-}
-
-async function listenToPort() {
-  const reader = port.readable.getReader();
-  try {
-    while (true) {
-      const { value, done } = await reader.read();
-      if (done) {
-        console.log('[readLoop] DONE');
-        break;
+      // Update parameters with new values (dummy example)
+      for (let i = 0; i < parametersList.length; i++) {
+        const parameterNode = parametersList[i];
+        const value = Number(parameterNode.getElementsByTagName("Value")[0].textContent);
+        parameterNode.getElementsByTagName("Value")[0].textContent = value.toFixed(3).toString();
       }
-      if (value) {
-        const receivedString = new TextDecoder('utf-8').decode(value);
-        receiveBuffer += receivedString;
-        clearTimeout(receiveTimeout);
-        receiveTimeout = setTimeout(processReceivedData, 50);
-        if (receiveBuffer.endsWith('\r')) {
-          processReceivedData();
-        }
-      }
-    }
-  } catch (error) {
-    console.error('[readLoop] ERROR', error);
-    alert('Error receiving data. Please check the connection and try again.');
-  } finally {
-    reader.releaseLock();
-  }
-}
 
-function toggle_connection_type() {
-  if (connectionType === 'serial') {
-    connectionType = 'bluetooth';
-    document.getElementById('connectionImage').src = "img/Bluetooth.svg";
-  } else {
-    connectionType = 'serial';
-    document.getElementById('connectionImage').src = "img/USB.svg";
-  }
-}
+      // Convert XML back to text
+      const serializer = new XMLSerializer();
+      const updatedXmlText = serializer.serializeToString(xmlDoc);
 
-function processReceivedData() {
-  const hex_array = convertStringToFloatArray(receiveBuffer);
-  logData("\nRX (hex): " + hex_array);
-  logData("\nRX (ascii): " + receiveBuffer);
-  receiveBuffer = '';
-}
-
-function convertStringToFloatArray(hexString) {
-  var floatArray = [];
-  for (var i = 0; i < hexString.length; i += 8) {
-    var hexFloat = hexString.substring(i, i + 8);
-    floatArray.push(hexToFloat(hexFloat));
-  }
-  return floatArray;
-}
-
-function hexToFloat(hex) {
-  var view = new DataView(new ArrayBuffer(4));
-  view.setUint32(0, parseInt(hex, 16), false);
-  return view.getFloat32(0, false);
-}
-
-function logData(data) {
-  const logTextarea = document.getElementById('logData');
-  logTextarea.value += data;
-}
-
-document.getElementById('clearButton').addEventListener('click', function() {
-  document.getElementById('logData').value = '';
-});
-
-document.getElementById('connectButton').addEventListener('click', connect);
-
-document.getElementById('hostTunnelButton').addEventListener('click', function() {
-  sendTX("host tunnel");
-  const hostTunnelButton = document.getElementById('hostTunnelButton');
-  hostTunnelButton.disabled = true;
-  hostTunnelButton.classList.remove('reset');
-  hostTunnelButton.classList.add('disabled');
-});
-
-function sendDisconnectCommand() {
-  sendTX("+++");
-  const hostTunnelButton = document.getElementById('hostTunnelButton');
-  hostTunnelButton.disabled = false;
-  hostTunnelButton.classList.remove('disabled');
-  hostTunnelButton.classList.add('reset');
-}
-
-document.getElementById('sendData').addEventListener('keypress', function(event) {
-  if (event.key === 'Enter') {
-    event.preventDefault();
-    const stringToSend = this.value.trim();
-    if (stringToSend !== '') {
-      sendTX(stringToSend);
-      this.value = '';
-      logData("\nTX: " + stringToSend);
-    }
-  }
-});
-
-function getDeviceInfo() {
-  const userAgent = navigator.userAgent;
-  let os = 'Unknown OS';
-  if (userAgent.indexOf('Win') != -1) os = 'Windows';
-  if (userAgent.indexOf('Mac') != -1) os = 'MacOS';
-  if (userAgent.indexOf('X11') != -1) os = 'UNIX';
-  if (userAgent.indexOf('Linux') != -1) os = 'Linux';
-  const browser = navigator.userAgent;
-  const deviceInfo = `OS: ${os}, Browser: ${browser}`;
-  document.getElementById('deviceInfo').value = deviceInfo;
-}
-
-function checkSerialSupport() {
-      if (!('serial' in navigator)) {
-        document.getElementById("connectionImage").style.visibility = "hidden";
-        alert('Web Serial API not supported in this browser. Please use a compatible browser. See https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API#browser_compatibility for more information.');
-      }
+      // Download the updated XML file
+      downloadFile(updatedXmlText, "updated_xml.xml", "text/xml");
     }
 
-document.addEventListener('DOMContentLoaded', function() {
-  getDeviceInfo();
-  checkSerialSupport();
-});
+    function downloadFile(data, filename, type) {
+      const blob = new Blob([data], { type: type });
+      const url = URL.createObjectURL(blob);
+
+      // Create a link element
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.textContent = "Download"; // Optional: Set text content for the link
+
+      // Append the link to the body (or any desired element)
+      document.body.appendChild(a);
+
+      // Trigger a click event on the link to initiate download
+      a.click();
+
+      // Clean up: remove the link from the DOM
+      document.body.removeChild(a);
+
+      // Revoke the URL object to free up resources
+      URL.revokeObjectURL(url);
+    }
   </script>
 </body>
 </html>
