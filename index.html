@@ -61,20 +61,24 @@
     }
 
     function downloadFile(data, filename, type) {
-      // Create a data URI
-      const dataURI = `data:${type};charset=utf-8,${encodeURIComponent(data)}`;
+      try {
+        // Create a data URI
+        const dataURI = `data:${type};charset=utf-8,${encodeURIComponent(data)}`;
 
-      // Create a temporary <a> element
-      const a = document.createElement('a');
-      a.href = dataURI;
-      a.download = filename;
+        // Create a temporary <a> element
+        const a = document.createElement('a');
+        a.href = dataURI;
+        a.download = filename;
 
-      // Append <a> to the body and programmatically click it
-      document.body.appendChild(a);
-      a.click();
+        // Append <a> to the body and programmatically click it
+        document.body.appendChild(a);
+        a.click();
 
-      // Clean up: remove <a> from body
-      document.body.removeChild(a);
+        // Clean up: remove <a> from body
+        document.body.removeChild(a);
+      } catch (error) {
+        alert(`Error in downloadFile: ${error.message}`);
+      }
     }
   </script>
 </body>
