@@ -24,12 +24,17 @@
   <h2>Fetch, Edit, Cache, and Download XML Example</h2>
   
   <button type="button" class="button" onclick="fetchAndCacheXML();">Fetch and Cache XML</button>
-  <button type="button" class="button" onclick="downloadEditedXML();">Download Edited XML</button>
+  <button type="button" class="button" onclick="submitDownloadForm();">Download Edited XML</button>
+
+  <!-- Hidden form for downloading XML -->
+  <form id="downloadForm" method="post" style="display: none;">
+    <input type="hidden" name="editedXML" id="editedXMLInput">
+  </form>
 
   <script>
     // Function to fetch XML, edit it, and cache in local storage
     function fetchAndCacheXML() {
-      const xmlUrl = './xml/sample.xml'; // Replace with your XML file URL
+      const xmlUrl = './sample.xml'; // Replace with your XML file URL
 
       fetch(xmlUrl)
         .then(response => {
@@ -44,6 +49,9 @@
 
           // Cache the edited XML in local storage
           localStorage.setItem('editedXML', editedXML);
+
+          // Also update the hidden input field in the form
+          document.getElementById('editedXMLInput').value = editedXML;
 
           // Optionally display or use the edited XML
           console.log('Edited XML:', editedXML);
@@ -71,23 +79,19 @@
       return editedXML;
     }
 
-    // Function to download the edited XML from local storage
-    function downloadEditedXML() {
+    // Function to submit the form and download the edited XML
+    function submitDownloadForm() {
       const editedXML = localStorage.getItem('editedXML');
 
       if (editedXML) {
-        const blob = new Blob([editedXML], { type: 'text/xml' });
-        const url = URL.createObjectURL(blob);
+        // Update the hidden input field in the form
+        document.getElementById('editedXMLInput').value = editedXML;
 
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'edited_xml.xml'; // Specify the file name here
-
-        document.body.appendChild(a);
-        a.click();
-
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        // Submit the form
+        const form = document.getElementById('downloadForm');
+        form.action = URL.createObjectURL(new Blob([editedXML], { type: 'text/xml' }));
+        form.method = 'GET';
+        form.submit();
       } else {
         console.error('Edited XML not found in local storage.');
       }
