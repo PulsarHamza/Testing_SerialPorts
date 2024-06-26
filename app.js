@@ -13,16 +13,18 @@ async function fetchAndEditXML() {
 
     // Cache the edited XML using the service worker
     if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-      navigator.serviceWorker.controller.postMessage({
-        command: 'cacheXML',
-        url: './data/runtime.xml', // URL to cache (same as fetch URL)
-        content: xmlText // Edited XML content to cache
+      const cacheRequest = new Request('./data/runtime.xml', { method: 'GET' });
+      const cacheResponse = new Response(xmlText, { headers: { 'Content-Type': 'application/xml' } });
+
+      caches.open(CACHE_NAME).then(cache => {
+        cache.put(cacheRequest, cacheResponse);
       });
     }
   } catch (error) {
     console.error('Error fetching XML:', error);
   }
 }
+
 
 // Function to download cached XML
 function downloadXML() {
