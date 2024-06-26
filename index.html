@@ -1,21 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>XML Editor</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Service Worker XML Example</title>
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <h1>XML Editor</h1>
-    <textarea id="xmlContent" cols="80" rows="20"></textarea>
-    <br>
-    <button id="loadButton">Load XML</button>
-    <button id="saveButton">Save to Cookie</button>
-    <button id="downloadButton">Download XML</button>
-    <button id="copyButton">Copy to Clipboard</button>
-    <h2>Cookies:</h2>
-    <div id="cookieDisplay"></div>
-    <script src="app.js"></script>
+  <h1>Service Worker XML Example</h1>
+  <p>This page demonstrates caching and editing of a runtime XML file using a service worker.</p>
+  
+  <!-- Button to fetch and edit XML -->
+  <button onclick="fetchAndEditXML()">Fetch and Edit XML</button>
+  
+  <!-- Button to download cached XML -->
+  <button onclick="downloadXML()">Download Cached XML</button>
+  
+  <!-- Display the edited XML content -->
+  <div id="xmlContent">
+    <h2>Edited XML Content:</h2>
+    <pre id="xmlData"></pre>
+  </div>
+
+  <!-- Include service worker registration -->
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js")
+        .then((registration) => {
+          console.log("Service Worker registered with scope:", registration.scope);
+        })
+        .catch((error) => {
+          console.error("Service Worker registration failed:", error);
+        });
+    }
+  </script>
+
+  <!-- Include script to fetch, edit, and display XML data -->
+  <script src="app.js"></script>
 </body>
 </html>
