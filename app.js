@@ -19,3 +19,22 @@ function fetchXML() {
       document.getElementById('status').textContent = 'Status: Error fetching XML';
     });
 }
+
+function editXML() {
+  fetch('/sample.xml')
+    .then(response => response.text())
+    .then(xml => {
+      const editedXml = xml.replace('<edited>false</edited>', '<edited>true</edited>');
+
+      // Update the cache with the edited XML
+      caches.open('xml-cache-v1')
+        .then(cache => {
+          const editedResponse = new Response(editedXml, { headers: { 'Content-Type': 'application/xml' } });
+          cache.put('/sample.xml', editedResponse);
+          console.log('Edited XML cached');
+          alert('XML edited successfully');
+        })
+        .catch(error => console.error('Error caching edited XML:', error));
+    })
+    .catch(error => console.error('Error editing XML:', error));
+}
