@@ -1,6 +1,7 @@
 document.getElementById('loadButton').addEventListener('click', loadXML);
 document.getElementById('saveButton').addEventListener('click', saveToCookie);
-document.getElementById('downloadButton').addEventListener('click', showXMLInNewTab);
+document.getElementById('downloadButton').addEventListener('click', downloadXMLFromCookie);
+document.getElementById('copyButton').addEventListener('click', copyToClipboard);
 
 function loadXML() {
     fetch('data.xml')
@@ -18,16 +19,42 @@ function saveToCookie() {
     displayCookies();
 }
 
-function showXMLInNewTab() {
+function downloadXMLFromCookie() {
     const xmlContent = getCookie('xmlContent');
     if (xmlContent) {
-        const newWindow = window.open();
-        newWindow.document.write('<pre>' + escapeHTML(decodeURIComponent(xmlContent)) + '</pre>');
-        newWindow.document.close();
-        alert('Copy the content and save it as an XML file.');
+        try {
+            const blob = new Blob([decodeURIComponent(xmlContent)], { type: 'text/xml' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'edited_data.xml';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Download failed, opening in new tab:', error);
+            openXMLInNewTab(xmlContent);
+        }
     } else {
         alert('No XML content found in cookies');
     }
+}
+
+function openXMLInNewTab(xmlContent) {
+    const newTab = window.open();
+    newTab.document.write('<pre>' + decodeURIComponent(xmlContent) + '</pre>');
+    newTab.document.close();
+}
+
+function copyToClipboard() {
+    const xmlContent = document.getElementById('xmlContent').value;
+    navigator.clipboard.writeText(xmlContent).then(() => {
+        alert('XML content copied to clipboard');
+    }).catch(err => {
+        console.error('Failed to copy text: ', err);
+        alert('Failed to copy XML content');
+    });
 }
 
 function getCookie(name) {
@@ -49,15 +76,3 @@ function displayCookies() {
 
 // Initial display of cookies when the page loads
 document.addEventListener('DOMContentLoaded', displayCookies);
-
-function escapeHTML(str) {
-    return str.replace(/[&<>"']/g, function (match) {
-        switch (match) {
-            case '&': return '&amp;';
-            case '<': return '&lt;';
-            case '>': return '&gt;';
-            case '"': return '&quot;';
-            case "'": return '&#39;';
-        }
-    });
-}
