@@ -1,96 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fetch, Edit, and Download XML</title>
-  <style>
-    .button {
-      display: inline-block;
-      padding: 10px 20px;
-      background-color: #007bff;
-      color: #fff;
-      border: none;
-      cursor: pointer;
-      border-radius: 4px;
-      text-decoration: none;
-      text-align: center;
-      font-size: 16px;
-      margin-top: 20px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XML Editor</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
-
 <body>
-  <h2>Fetch, Edit, and Download XML - Test 15</h2>
-
-  <button type="button" class="button" onclick="fetchEditDownloadXML();">Download Edited XML File</button>
-
-  <script>
-    async function fetchEditDownloadXML() {
-      const xmlFilePath = './xml/sample.xml';
-
-      try {
-        // Fetch the XML file
-        const response = await fetch(xmlFilePath);
-        if (!response.ok) {
-          alert('Error fetching the XML file.');
-          throw new Error('Network response was not ok');
-        }
-        const xmlText = await response.text();
-
-        // Parse the XML text into a DOM object
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-
-        // Log the entire XML document for debugging
-        console.log(xmlDoc);
-
-        // Edit the XML content (example: update a value)
-        const parametersList = xmlDoc.getElementsByTagName('Parameters');
-        if (parametersList.length > 0) {
-          const firstParameter = parametersList[0];
-          const valueNode = firstParameter.getElementsByTagName('Value')[0];
-
-          if (valueNode) {
-            valueNode.textContent = '99.999';
-          } else {
-            alert('Value element not found in the first Parameters.');
-            console.warn('Value element not found in the first Parameters.');
-          }
-        } else {
-          alert('No Parameters elements found.');
-          console.warn('No Parameters elements found.');
-        }
-
-        // Convert the edited XML back to a string
-        const serializer = new XMLSerializer();
-        const editedXmlText = serializer.serializeToString(xmlDoc);
-
-        // Create a Blob from the edited XML string
-        const blob = new Blob([editedXmlText], { type: 'text/xml' });
-
-        // Generate a URL for the Blob
-        const url = URL.createObjectURL(blob);
-
-        // Create a temporary <a> element and trigger download
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'edited_sample.xml'; // Specify the file name here
-        document.body.appendChild(a);
-        a.click();
-
-        // Clean up: remove <a> from body and revoke the object URL
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-
-      } catch (error) {
-        alert('Error: ' + error.message);
-        console.error('Error:', error);
-      }
-    }
-  </script>
+    <h1>XML Editor</h1>
+    <textarea id="xmlContent" cols="80" rows="20"></textarea>
+    <br>
+    <button id="loadButton">Load XML</button>
+    <button id="saveButton">Save to Cookie</button>
+    <button id="downloadButton">Download XML</button>
+    <script src="app.js"></script>
 </body>
-
 </html>
