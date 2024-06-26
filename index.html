@@ -28,12 +28,9 @@
   <button type="button" class="button" onclick="fetchAndCacheXML();">Fetch and Cache XML</button>
   <button type="button" class="button" onclick="downloadXML();">Download Edited XML</button>
 
-  <!-- Hidden form for downloading XML -->
-  <form id="downloadForm" method="get" style="display: none;">
-    <input type="hidden" name="editedXML" id="editedXMLInput">
-  </form>
-
   <script>
+    let cachedXMLBlobUrl = null;
+
     // Function to fetch XML, edit it, and cache in local storage
     function fetchAndCacheXML() {
       const xmlUrl = './sample.xml'; // Ensure this file is in the same directory
@@ -51,8 +48,12 @@
           // Edit the XML (add something random, for example)
           const editedXML = addRandomContent(xmlText);
 
-          // Cache the edited XML in local storage
-          localStorage.setItem('editedXML', editedXML);
+          // Cache the edited XML in a Blob URL
+          if (cachedXMLBlobUrl) {
+            URL.revokeObjectURL(cachedXMLBlobUrl);
+          }
+          const blob = new Blob([editedXML], { type: 'application/xml' });
+          cachedXMLBlobUrl = URL.createObjectURL(blob);
 
           // Optionally display or use the edited XML
           console.log('Edited XML:', editedXML);
@@ -96,21 +97,15 @@
 
     // Function to download XML using form submission
     function downloadXML() {
-      const editedXML = localStorage.getItem('editedXML');
-
-      if (editedXML) {
-        // Create a blob and URL for the edited XML
-        const blob = new Blob([editedXML], { type: 'application/xml' });
-        const url = URL.createObjectURL(blob);
-
+      if (cachedXMLBlobUrl) {
         // Create a temporary form element
         const form = document.createElement('form');
         form.style.display = 'none'; // Hide the form
 
-        // Set the action to the blob URL
-        form.action = url;
+        // Set the action to the Blob URL
+        form.action = cachedXMLBlobUrl;
 
-        // Set method as 'GET' or 'POST' depending on your server setup
+        // Set method as 'GET'
         form.method = 'GET';
 
         // Append the form to the document body
@@ -121,12 +116,9 @@
 
         // Clean up: remove the form from the body after submission
         document.body.removeChild(form);
-
-        // Revoke the object URL after submission
-        URL.revokeObjectURL(url);
       } else {
-        alert('Edited XML not found in local storage.');
-        console.error('Edited XML not found in local storage.');
+        alert('No cached XML to download. Please fetch and edit the XML first.');
+        console.error('No cached XML to download. Please fetch and edit the XML first.');
       }
     }
   </script>
