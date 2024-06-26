@@ -1,4 +1,4 @@
-// Function to fetch and edit XML
+// Function to fetch, edit, cache, and display XML
 async function fetchAndEditXML() {
   try {
     const response = await fetch('./data/runtime.xml'); // Path to your XML file
@@ -15,7 +15,7 @@ async function fetchAndEditXML() {
     if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
       navigator.serviceWorker.controller.postMessage({
         command: 'cacheXML',
-        url: './data/reflect-e_0.1.7_default.xml', // URL to cache (same as fetch URL)
+        url: './data/runtime.xml', // URL to cache (same as fetch URL)
         content: xmlText // Edited XML content to cache
       });
     }
@@ -23,6 +23,7 @@ async function fetchAndEditXML() {
     console.error('Error fetching XML:', error);
   }
 }
+
 // Function to download cached XML
 function downloadXML() {
   const form = document.createElement('form');
