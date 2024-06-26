@@ -34,16 +34,18 @@
   <script>
     // Function to fetch XML, edit it, and cache in local storage
     function fetchAndCacheXML() {
-      const xmlUrl = './xml/sample.xml'; // Replace with your XML file URL
+      const xmlUrl = './sample.xml'; 
 
       fetch(xmlUrl)
         .then(response => {
           if (!response.ok) {
+            alert("Error: Network response was not ok");
             throw new Error('Network response was not ok');
           }
           return response.text();
         })
         .then(xmlText => {
+          alert("Fetched XML: " + xmlText);
           // Edit the XML (add something random, for example)
           const editedXML = addRandomContent(xmlText);
 
@@ -55,28 +57,42 @@
 
           // Optionally display or use the edited XML
           console.log('Edited XML:', editedXML);
+          alert("Edited XML: " + editedXML);
         })
         .catch(error => {
+          alert('Error fetching XML: ' + error.message);
           console.error('Error fetching XML:', error);
         });
     }
 
     // Function to simulate editing the XML (add something random)
     function addRandomContent(xmlText) {
-      // Example: Add a random attribute to the root element
-      const parser = new DOMParser();
-      const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-      const rootElement = xmlDoc.documentElement;
+      try {
+        // Example: Add a random attribute to the root element
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(xmlText, 'application/xml');
 
-      // Example: Add a random attribute 'randomAttr'
-      const randomValue = Math.random().toString(36).substring(7);
-      rootElement.setAttribute('randomAttr', randomValue);
+        // Check for parsing errors
+        if (xmlDoc.getElementsByTagName('parsererror').length > 0) {
+          alert("Error parsing XML: " + xmlDoc.getElementsByTagName('parsererror')[0].textContent);
+          throw new Error('Error parsing XML');
+        }
 
-      // Serialize XML back to string
-      const serializer = new XMLSerializer();
-      const editedXML = serializer.serializeToString(xmlDoc);
-      
-      return editedXML;
+        const rootElement = xmlDoc.documentElement;
+
+        // Example: Add a random attribute 'randomAttr'
+        const randomValue = Math.random().toString(36).substring(7);
+        rootElement.setAttribute('randomAttr', randomValue);
+
+        // Serialize XML back to string
+        const serializer = new XMLSerializer();
+        const editedXML = serializer.serializeToString(xmlDoc);
+        
+        return editedXML;
+      } catch (error) {
+        alert('Error editing XML: ' + error.message);
+        console.error('Error editing XML:', error);
+      }
     }
 
     // Function to submit the form and download the edited XML
@@ -87,12 +103,24 @@
         // Update the hidden input field in the form
         document.getElementById('editedXMLInput').value = editedXML;
 
-        // Submit the form
-        const form = document.getElementById('downloadForm');
-        form.action = URL.createObjectURL(new Blob([editedXML], { type: 'text/xml' }));
-        form.method = 'GET';
-        form.submit();
+        // Create a blob and URL for the edited XML
+        const blob = new Blob([editedXML], { type: 'application/xml' });
+        const url = URL.createObjectURL(blob);
+
+        // Create a temporary link element
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'edited_sample.xml'; // Set the desired file name
+
+        // Append the link to the document, trigger the click, and remove the link
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+
+        // Revoke the object URL after the download
+        URL.revokeObjectURL(url);
       } else {
+        alert('Edited XML not found in local storage.');
         console.error('Edited XML not found in local storage.');
       }
     }
