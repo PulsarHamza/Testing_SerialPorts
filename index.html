@@ -23,7 +23,7 @@
 </head>
 
 <body>
-  <h2>Fetch, Edit, and Download XML - Test 14</h2>
+  <h2>Fetch, Edit, and Download XML - Test 15</h2>
 
   <button type="button" class="button" onclick="fetchEditDownloadXML();">Download Edited XML File</button>
 
@@ -44,10 +44,24 @@
         const parser = new DOMParser();
         const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
 
+        // Log the entire XML document for debugging
+        console.log(xmlDoc);
+
         // Edit the XML content (example: update a value)
-        const parametersList = xmlDoc.getElementsByTagName('Parameter');
+        const parametersList = xmlDoc.getElementsByTagName('Parameters');
         if (parametersList.length > 0) {
-          parametersList[0].getElementsByTagName('Value')[0].textContent = '99.999';
+          const firstParameter = parametersList[0];
+          const valueNode = firstParameter.getElementsByTagName('Value')[0];
+
+          if (valueNode) {
+            valueNode.textContent = '99.999';
+          } else {
+            alert('Value element not found in the first Parameters.');
+            console.warn('Value element not found in the first Parameters.');
+          }
+        } else {
+          alert('No Parameters elements found.');
+          console.warn('No Parameters elements found.');
         }
 
         // Convert the edited XML back to a string
@@ -72,6 +86,7 @@
         window.URL.revokeObjectURL(url);
 
       } catch (error) {
+        alert('Error: ' + error.message);
         console.error('Error:', error);
       }
     }
