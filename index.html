@@ -12,7 +12,11 @@
     <br>
     <button id="loadButton">Load XML</button>
     <button id="saveButton">Save to Cookie</button>
-    <button id="downloadButton">Download XML</button>
+    <button id="downloadButton">Prepare Download</button>
+    <div id="downloadInstructions" style="display:none;">
+        <p>Long-press the link below to download the XML file:</p>
+        <a id="downloadLink" href="#" download="edited_data.xml">Download XML</a>
+    </div>
     <h2>Cookies:</h2>
     <div id="cookieDisplay"></div>
     <script src="app.js"></script>
