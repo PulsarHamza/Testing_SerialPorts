@@ -21,18 +21,29 @@ function saveToCookie() {
 function downloadXMLFromCookie() {
     const xmlContent = getCookie('xmlContent');
     if (xmlContent) {
-        const blob = new Blob([decodeURIComponent(xmlContent)], { type: 'text/xml' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'edited_data.xml';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        try {
+            const blob = new Blob([decodeURIComponent(xmlContent)], { type: 'text/xml' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'edited_data.xml';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Download failed, opening in new tab:', error);
+            openXMLInNewTab(xmlContent);
+        }
     } else {
         alert('No XML content found in cookies');
     }
+}
+
+function openXMLInNewTab(xmlContent) {
+    const newTab = window.open();
+    newTab.document.write('<pre>' + decodeURIComponent(xmlContent) + '</pre>');
+    newTab.document.close();
 }
 
 function getCookie(name) {
