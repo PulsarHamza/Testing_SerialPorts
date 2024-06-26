@@ -15,6 +15,7 @@ function saveToCookie() {
     const xmlContent = document.getElementById('xmlContent').value;
     document.cookie = "xmlContent=" + encodeURIComponent(xmlContent) + "; path=/";
     alert('XML content saved to cookie');
+    displayCookies();
 }
 
 function downloadXMLFromCookie() {
@@ -39,3 +40,17 @@ function getCookie(name) {
     const parts = value.split(`; ${name}=`);
     if (parts.length === 2) return parts.pop().split(';').shift();
 }
+
+function displayCookies() {
+    const cookies = document.cookie.split('; ').map(cookie => cookie.split('='));
+    const cookieDisplay = document.getElementById('cookieDisplay');
+    cookieDisplay.innerHTML = '';
+    cookies.forEach(([name, value]) => {
+        const div = document.createElement('div');
+        div.textContent = `${name}: ${decodeURIComponent(value)}`;
+        cookieDisplay.appendChild(div);
+    });
+}
+
+// Initial display of cookies when the page loads
+document.addEventListener('DOMContentLoaded', displayCookies);
