@@ -1,6 +1,5 @@
 // Service Worker Script (sw.js)
 
-// Define the cache name
 const CACHE_NAME = "web-app-cache-v1";
 
 // Listen for messages from clients (app.js)
@@ -13,19 +12,6 @@ self.addEventListener("message", (event) => {
     event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.put(request, response)));
 
     alert("XML cached:", url);
-  } else if (event.data.command === "checkCache") {
-    const { url } = event.data;
-    const cacheRequest = new Request(url, { method: "GET" });
-
-    event.waitUntil(
-      caches.match(cacheRequest).then((response) => {
-        if (response) {
-          alert("XML served from cache:", url);
-        } else {
-          alert("XML served from network:", url);
-        }
-      })
-    );
   }
 });
 
@@ -35,8 +21,8 @@ self.addEventListener("fetch", (event) => {
   if (event.request.url.endsWith("/data/runtime.xml")) {
     event.respondWith(
       caches.match(event.request).then((cachedResponse) => {
-        // If found in cache, return the cached response
         if (cachedResponse) {
+          // If found in cache, return the cached response
           alert("Response served from cache:", event.request.url);
           return cachedResponse;
         }
@@ -47,7 +33,7 @@ self.addEventListener("fetch", (event) => {
             alert("Response fetched from network:", event.request.url);
 
             // Clone the response as caches.put consumes the response body
-            let cacheCopy = networkResponse.clone();
+            const cacheCopy = networkResponse.clone();
             caches.open(CACHE_NAME).then((cache) => {
               // Cache the fetched response
               cache.put(event.request, cacheCopy);

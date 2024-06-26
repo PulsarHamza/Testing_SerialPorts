@@ -1,4 +1,5 @@
 const CACHE_NAME = "web-app-cache-v1";
+
 // Function to fetch, edit, cache, and display XML
 async function fetchAndEditXML() {
   try {
@@ -12,17 +13,20 @@ async function fetchAndEditXML() {
     // Log edit done
     alert("XML edit done");
 
-    const cacheRequest = new Request("./data/runtime.xml", { method: "GET" });
-    const cacheResponse = new Response(xmlText, { headers: { "Content-Type": "application/xml" } });
-
-    caches.open(CACHE_NAME).then((cache) => {
-      cache.put(cacheRequest, cacheResponse).then(() => {
-        alert("XML cached successfully:", cacheRequest.url);
-
-        // After caching, update the displayed XML content
-        document.getElementById("xmlData").textContent = xmlText;
+    // Cache the edited XML using service worker
+    if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
+      // Send message to service worker to cache the edited XML
+      navigator.serviceWorker.controller.postMessage({
+        command: "cacheXML",
+        url: "./data/runtime.xml",
+        content: xmlText,
       });
-    });
+
+      // After caching, update the displayed XML content
+      document.getElementById("xmlData").textContent = xmlText;
+    } else {
+      console.error("Service Worker not supported");
+    }
   } catch (error) {
     alert("Error fetching XML:", error);
   }
@@ -44,4 +48,18 @@ function downloadXML() {
 
   // Clean up: remove the anchor from the body
   document.body.removeChild(anchor);
+}
+
+// Register service worker if supported
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker
+    .register("/sw.js")
+    .then((registration) => {
+      console.log("Service Worker registered with scope:", registration.scope);
+    })
+    .catch((error) => {
+      console.error("Service Worker registration failed:", error);
+    });
+} else {
+  console.warn("Service Worker is not supported by this browser");
 }
