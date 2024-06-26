@@ -1,3 +1,4 @@
+const CACHE_NAME = "web-app-cache-v1";
 // Function to fetch, edit, cache, and display XML
 async function fetchAndEditXML() {
   try {
