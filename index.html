@@ -1,21 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Service Worker XML Example</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body>
   <h1>Service Worker XML Example</h1>
   <p>This page demonstrates caching and editing of a runtime XML file using a service worker.</p>
-  
+
   <!-- Button to fetch and edit XML -->
   <button onclick="fetchAndEditXML()">Fetch and Edit XML</button>
-  
+
   <!-- Button to download cached XML -->
   <button onclick="downloadXML()">Download Cached XML</button>
-  
+
   <!-- Display the edited XML content -->
   <div id="xmlContent">
     <h2>Edited XML Content:</h2>
@@ -27,10 +29,10 @@
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("./sw.js")
         .then((registration) => {
-          console.log("Service Worker registered with scope:", registration.scope);
+          alert("Service Worker registered with scope:", registration.scope);
         })
         .catch((error) => {
-          console.error("Service Worker registration failed:", error);
+          alert("Service Worker registration failed:", error);
         });
     }
   </script>
@@ -38,4 +40,5 @@
   <!-- Include script to fetch, edit, and display XML data -->
   <script src="app.js"></script>
 </body>
+
 </html>

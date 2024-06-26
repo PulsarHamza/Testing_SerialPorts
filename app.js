@@ -1,7 +1,7 @@
 // Function to fetch, edit, cache, and display XML
 async function fetchAndEditXML() {
   try {
-    const response = await fetch('./data/runtime.xml'); // Path to your XML file
+    const response = await fetch("./data/runtime.xml"); // Path to your XML file
     let xmlText = await response.text();
 
     // Edit XML content (for demonstration, appending a timestamp)
@@ -9,38 +9,33 @@ async function fetchAndEditXML() {
     xmlText += `\n<!-- Updated at ${timestamp} -->`;
 
     // Log edit done
-    console.log('XML edit done:', xmlText);
+    alert("XML edit done");
 
-    // Cache the edited XML using the service worker
-    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-      const cacheRequest = new Request('./data/runtime.xml', { method: 'GET' });
-      const cacheResponse = new Response(xmlText, { headers: { 'Content-Type': 'application/xml' } });
+    const cacheRequest = new Request("./data/runtime.xml", { method: "GET" });
+    const cacheResponse = new Response(xmlText, { headers: { "Content-Type": "application/xml" } });
 
-      caches.open(CACHE_NAME).then(cache => {
-        cache.put(cacheRequest, cacheResponse).then(() => {
-          console.log('XML cached successfully:', cacheRequest.url);
-          
-          // After caching, update the displayed XML content
-          document.getElementById('xmlData').textContent = xmlText;
-        });
+    caches.open(CACHE_NAME).then((cache) => {
+      cache.put(cacheRequest, cacheResponse).then(() => {
+        alert("XML cached successfully:", cacheRequest.url);
+
+        // After caching, update the displayed XML content
+        document.getElementById("xmlData").textContent = xmlText;
       });
-    } else {
-      console.error('Service Worker not supported');
-    }
+    });
   } catch (error) {
-    console.error('Error fetching XML:', error);
+    alert("Error fetching XML:", error);
   }
 }
 
 // Function to download cached XML
 function downloadXML() {
-  const downloadUrl = './data/runtime.xml'; // URL of the XML file to download
+  const downloadUrl = "./data/runtime.xml"; // URL of the XML file to download
 
   // Create a temporary anchor element for downloading
-  const anchor = document.createElement('a');
-  anchor.style.display = 'none';
+  const anchor = document.createElement("a");
+  anchor.style.display = "none";
   anchor.href = downloadUrl;
-  anchor.download = 'runtime.xml'; // Filename for the downloaded file
+  anchor.download = "runtime.xml"; // Filename for the downloaded file
 
   // Append anchor to body and click it programmatically
   document.body.appendChild(anchor);
@@ -48,19 +43,4 @@ function downloadXML() {
 
   // Clean up: remove the anchor from the body
   document.body.removeChild(anchor);
-
-  // Alert to show where the XML file is served from
-  showAlert(downloadUrl);
-}
-
-// Function to show alerts based on where the XML file is served from
-function showAlert(url) {
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.controller.postMessage({
-      command: 'checkCache',
-      url: url
-    });
-  } else {
-    alert('Service Worker not supported');
-  }
 }
