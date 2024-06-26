@@ -1,5 +1,5 @@
 function fetchXML() {
-  fetch('/sample.xml')
+  fetch('./sample.xml')
     .then(response => response.text())
     .then(xml => {
       const status = document.getElementById('status');
@@ -21,7 +21,7 @@ function fetchXML() {
 }
 
 function editXML() {
-  fetch('/sample.xml')
+  fetch('./sample.xml')
     .then(response => response.text())
     .then(xml => {
       const editedXml = xml.replace('<edited>false</edited>', '<edited>true</edited>');
@@ -30,7 +30,7 @@ function editXML() {
       caches.open('xml-cache-v1')
         .then(cache => {
           const editedResponse = new Response(editedXml, { headers: { 'Content-Type': 'application/xml' } });
-          cache.put('/sample.xml', editedResponse);
+          cache.put('./sample.xml', editedResponse);
           console.log('Edited XML cached');
           alert('XML edited successfully');
         })
