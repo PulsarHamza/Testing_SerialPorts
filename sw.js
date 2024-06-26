@@ -7,7 +7,7 @@ const CACHE_NAME = 'xml-cache-v1';
 const urlsToCache = [
   './',
   './index.html',
-  './styles.css',
+  './style.css',
   './app.js',
   './sample.xml' // Path to your XML file
 ];
