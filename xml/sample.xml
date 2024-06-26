@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+  <Parameters>
+    <Index>0</Index>
+    <Parameter>Param0</Parameter>
+    <Value>123.456</Value>
+  </Parameters>
+  <Parameters>
+    <Index>1</Index>
+    <Parameter>Param1</Parameter>
+    <Value>234.567</Value>
+  </Parameters>
+  <Parameters>
+    <Index>2</Index>
+    <Parameter>Param2</Parameter>
+    <Value>345.678</Value>
+  </Parameters>
+</root>

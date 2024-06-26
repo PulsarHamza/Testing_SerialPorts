@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fetch, Edit, Cache, and Download XML Example</title>
+  <title>Fetch, Edit, and Download XML</title>
   <style>
     .button {
       display: inline-block;
@@ -23,110 +23,56 @@
 </head>
 
 <body>
-  <h2>Fetch, Edit, Cache, and Download XML Example - TEST 13</h2>
+  <h2>Fetch, Edit, and Download XML - Test 14</h2>
 
-  <button type="button" class="button" onclick="fetchAndCacheXML();">Fetch and Cache XML</button>
-  <button type="button" class="button" onclick="downloadXML();">Download Edited XML</button>
+  <button type="button" class="button" onclick="fetchEditDownloadXML();">Download Edited XML File</button>
 
   <script>
-    let cachedXMLBlobUrl = null;
+    async function fetchEditDownloadXML() {
+      const xmlFilePath = './xml/sample.xml';
 
-    // Function to fetch XML, edit it, and cache in local storage
-    function fetchAndCacheXML() {
-      const xmlUrl = './sample.xml'; // Ensure this file is in the same directory
-
-      fetch(xmlUrl)
-        .then(response => {
-          if (!response.ok) {
-            alert("Error: Network response was not ok");
-            throw new Error('Network response was not ok');
-          }
-          return response.text();
-        })
-        .then(xmlText => {
-          alert("Fetched XML: " + xmlText);
-          // Edit the XML (add something random, for example)
-          const editedXML = addRandomContent(xmlText);
-
-          // Cache the edited XML in a Blob URL
-          if (cachedXMLBlobUrl) {
-            URL.revokeObjectURL(cachedXMLBlobUrl);
-          }
-          const blob = new Blob([editedXML], { type: 'application/xml' });
-          cachedXMLBlobUrl = URL.createObjectURL(blob);
-
-          // Optionally display or use the edited XML
-          console.log('Edited XML:', editedXML);
-          alert("Edited XML: " + editedXML);
-
-          // Cache the edited XML content locally for form submission
-          localStorage.setItem('editedXML', editedXML);
-        })
-        .catch(error => {
-          alert('Error fetching XML: ' + error.message);
-          console.error('Error fetching XML:', error);
-        });
-    }
-
-    // Function to simulate editing the XML (add something random)
-    function addRandomContent(xmlText) {
       try {
-        // Example: Add a random attribute to the root element
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(xmlText, 'application/xml');
+        // Fetch the XML file
+        const response = await fetch(xmlFilePath);
+        if (!response.ok) {
+          alert('Error fetching the XML file.');
+          throw new Error('Network response was not ok');
+        }
+        const xmlText = await response.text();
 
-        // Check for parsing errors
-        if (xmlDoc.getElementsByTagName('parsererror').length > 0) {
-          alert("Error parsing XML: " + xmlDoc.getElementsByTagName('parsererror')[0].textContent);
-          throw new Error('Error parsing XML');
+        // Parse the XML text into a DOM object
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+
+        // Edit the XML content (example: update a value)
+        const parametersList = xmlDoc.getElementsByTagName('Parameter');
+        if (parametersList.length > 0) {
+          parametersList[0].getElementsByTagName('Value')[0].textContent = '99.999';
         }
 
-        const rootElement = xmlDoc.documentElement;
-
-        // Example: Add a random attribute 'randomAttr'
-        const randomValue = Math.random().toString(36).substring(7);
-        rootElement.setAttribute('randomAttr', randomValue);
-
-        // Serialize XML back to string
+        // Convert the edited XML back to a string
         const serializer = new XMLSerializer();
-        const editedXML = serializer.serializeToString(xmlDoc);
+        const editedXmlText = serializer.serializeToString(xmlDoc);
 
-        return editedXML;
+        // Create a Blob from the edited XML string
+        const blob = new Blob([editedXmlText], { type: 'text/xml' });
+
+        // Generate a URL for the Blob
+        const url = URL.createObjectURL(blob);
+
+        // Create a temporary <a> element and trigger download
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'edited_sample.xml'; // Specify the file name here
+        document.body.appendChild(a);
+        a.click();
+
+        // Clean up: remove <a> from body and revoke the object URL
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+
       } catch (error) {
-        alert('Error editing XML: ' + error.message);
-        console.error('Error editing XML:', error);
-      }
-    }
-
-    // Function to download XML using form submission
-    function downloadXML() {
-      const editedXML = localStorage.getItem('editedXML');
-      if (editedXML) {
-        // Create a Blob URL for the edited XML
-        const blob = new Blob([editedXML], { type: 'application/xml' });
-        const blobUrl = URL.createObjectURL(blob);
-
-        // Create a temporary form element
-        const form = document.createElement('form');
-        form.style.display = 'none'; // Hide the form
-
-        // Set the action to the Blob URL
-        form.action = blobUrl;
-
-        // Set method as 'GET'
-        form.method = 'GET';
-
-        // Append the form to the document body
-        document.body.appendChild(form);
-
-        // Submit the form
-        form.submit();
-
-        // Clean up: remove the form from the body after submission
-        document.body.removeChild(form);
-      } else {
-        alert('No cached XML to download. Please fetch and edit the XML first.');
-        console.error('No cached XML to download. Please fetch and edit the XML first.');
+        console.error('Error:', error);
       }
     }
   </script>
