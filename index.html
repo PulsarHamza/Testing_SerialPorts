@@ -58,6 +58,9 @@
           // Optionally display or use the edited XML
           console.log('Edited XML:', editedXML);
           alert("Edited XML: " + editedXML);
+
+          // Cache the edited XML content locally for form submission
+          localStorage.setItem('editedXML', editedXML);
         })
         .catch(error => {
           alert('Error fetching XML: ' + error.message);
@@ -97,13 +100,30 @@
 
     // Function to download XML using form submission
     function downloadXML() {
-      if (cachedXMLBlobUrl) {
-        const a = document.createElement('a');
-        a.href = cachedXMLBlobUrl;
-        a.download = 'edited_sample.xml';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+      const editedXML = localStorage.getItem('editedXML');
+      if (editedXML) {
+        // Create a Blob URL for the edited XML
+        const blob = new Blob([editedXML], { type: 'application/xml' });
+        const blobUrl = URL.createObjectURL(blob);
+
+        // Create a temporary form element
+        const form = document.createElement('form');
+        form.style.display = 'none'; // Hide the form
+
+        // Set the action to the Blob URL
+        form.action = blobUrl;
+
+        // Set method as 'GET'
+        form.method = 'GET';
+
+        // Append the form to the document body
+        document.body.appendChild(form);
+
+        // Submit the form
+        form.submit();
+
+        // Clean up: remove the form from the body after submission
+        document.body.removeChild(form);
       } else {
         alert('No cached XML to download. Please fetch and edit the XML first.');
         console.error('No cached XML to download. Please fetch and edit the XML first.');
