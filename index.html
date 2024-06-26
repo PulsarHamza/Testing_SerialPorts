@@ -98,24 +98,12 @@
     // Function to download XML using form submission
     function downloadXML() {
       if (cachedXMLBlobUrl) {
-        // Create a temporary form element
-        const form = document.createElement('form');
-        form.style.display = 'none'; // Hide the form
-
-        // Set the action to the Blob URL
-        form.action = cachedXMLBlobUrl;
-
-        // Set method as 'GET'
-        form.method = 'GET';
-
-        // Append the form to the document body
-        document.body.appendChild(form);
-
-        // Submit the form
-        form.submit();
-
-        // Clean up: remove the form from the body after submission
-        document.body.removeChild(form);
+        const a = document.createElement('a');
+        a.href = cachedXMLBlobUrl;
+        a.download = 'edited_sample.xml';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
       } else {
         alert('No cached XML to download. Please fetch and edit the XML first.');
         console.error('No cached XML to download. Please fetch and edit the XML first.');
