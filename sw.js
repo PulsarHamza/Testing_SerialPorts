@@ -17,7 +17,7 @@ self.addEventListener("install", (event) => {
 self.addEventListener("fetch", (event) => {
   const requestUrl = new URL(event.request.url);
 
-  if (requestUrl.pathname.endsWith("./sample1.xml")) {
+  if (requestUrl.pathname.endsWith(".xml")) {
     self.console.log("URL matched!");
     event.respondWith(
       caches.open(CACHE_NAME).then((cache) => {
