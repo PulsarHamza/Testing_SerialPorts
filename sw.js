@@ -1,5 +1,11 @@
 const CACHE_NAME = "xml-cache-v1";
-const urlsToCache = ["./", "./index.html", "./style.css", "./app.js"];
+const urlsToCache = [
+  "./",
+  "./index.html",
+  "./style.css",
+  "./app.js",
+  "./sample.xml", // Path to your XML file
+];
 
 // Install event
 self.addEventListener("install", (event) => {
