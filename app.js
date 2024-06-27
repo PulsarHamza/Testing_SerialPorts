@@ -41,6 +41,26 @@ function editXML() {
     .catch((error) => console.error("Error editing XML:", error));
 }
 
+function downloadXML() {
+  const form = document.createElement("form");
+  form.style.display = "none"; // Hide the form
+
+  // Specify the URL of the XML file to download
+  form.action = "./sample.xml"; // Replace with your XML file URL
+
+  // Set method as 'GET' or 'POST' depending on your server setup
+  form.method = "GET";
+
+  // Append the form to the document body
+  document.body.appendChild(form);
+
+  // Submit the form
+  form.submit();
+
+  // Clean up: remove the form from the body after submission
+  document.body.removeChild(form);
+}
+
 // Register service worker
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker
