@@ -1,10 +1,10 @@
 const CACHE_NAME = 'xml-cache-v1';
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/styles.css',
-  '/app.js',
-  '/sample.xml' // Path to your XML file
+  './',
+  './index.html',
+  './style.css',
+  './app.js',
+  './sample.xml' // Path to your XML file
 ];
 
 // Install event
@@ -19,7 +19,7 @@ self.addEventListener('install', event => {
 self.addEventListener('fetch', event => {
   const requestUrl = new URL(event.request.url);
 
-  if (requestUrl.pathname.endsWith('/sample.xml')) {
+  if (requestUrl.pathname.endsWith('./sample.xml')) {
     event.respondWith(
       caches.open(CACHE_NAME).then(cache => {
         return cache.match(event.request).then(response => {
