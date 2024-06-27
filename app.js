@@ -31,7 +31,7 @@ function editXML() {
         .open("xml-cache-v1")
         .then((cache) => {
           const editedResponse = new Response(editedXml, { headers: { "Content-Type": "application/xml" } });
-          return cache.put("./sample.xml", editedResponse).then(() => {
+          return cache.put("./sample1.xml", editedResponse).then(() => {
             console.log("Edited XML cached");
             alert("XML edited successfully");
           });
