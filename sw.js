@@ -13,6 +13,11 @@ self.addEventListener("install", (event) => {
   self.console.log("Installed!");
 });
 
+self.addEventListener("activate", () => {
+  self.console.log("sw activate");
+  clients.claim();
+});
+
 // // Fetch event
 // self.addEventListener("fetch", (event) => {
 //   const requestUrl = new URL(event.request.url);
