@@ -1,20 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>XML Caching Example</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Copy Text to Clipboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        textarea {
+            width: 100%;
+            height: 200px;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            resize: vertical;
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
 </head>
-
 <body>
-  <h1>XML Caching Example</h1>
-  <button onclick="fetchXML()">Fetch XML</button>
-  <button onclick="editXML()">Edit XML</button>
-  <button onclick="downloadXML()">Download XML</button>
-  <p id="status">Status: Waiting for action</p>
-  <script src="app.js"></script>
-</body>
+    <h2>Copy Text to Clipboard</h2>
+    <textarea id="xmlContent" rows="10" cols="50">This is some text that you can select and copy.</textarea>
+    <br>
+    <button onclick="selectAllText()">Select All and Copy</button>
 
+    <script>
+        function selectAllText() {
+            const textarea = document.getElementById('xmlContent');
+            textarea.select();
+            textarea.setSelectionRange(0, textarea.value.length);
+
+            // Get selected text from textarea
+            const selectedText = textarea.value;
+
+
+              navigator.clipboard.writeText(selectedText).then(() => {
+                  alert('XML content copied to clipboard');
+              }).catch(err => {
+                  console.error('Failed to copy text: ', err);
+                  alert('Failed to copy XML content');
+              });
+
+        }
+    </script>
+</body>
 </html>
