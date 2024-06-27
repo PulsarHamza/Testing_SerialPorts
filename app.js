@@ -1,5 +1,5 @@
 function fetchXML() {
-  fetch("./sample.xml", { cache: "only-if-cached" })
+  fetch("./sample.xml", { mode: "same-origin", cache: "only-if-cached" })
     .then((response) => response.text())
     .then((xml) => {
       const status = document.getElementById("status");
