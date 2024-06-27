@@ -1,5 +1,5 @@
 function fetchXML() {
-  fetch("./sample.xml")
+  fetch("./sample.xml", { cache: "only-if-cached" })
     .then((response) => response.text())
     .then((xml) => {
       const status = document.getElementById("status");
