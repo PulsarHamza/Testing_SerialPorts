@@ -7,10 +7,10 @@ function fetchXML() {
 
       if (isEdited) {
         alert("Edited XML");
-        status.textContent = "Status: Served from cache (Edited)";
+        status.textContent = "Status: (Edited)";
       } else {
         alert("Unedited XML");
-        status.textContent = "Status: Served from cache (Unedited)";
+        status.textContent = "Status: (Unedited)";
       }
     })
     .catch((error) => {
