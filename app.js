@@ -1,54 +1,31 @@
-function fetchXML() {
-  fetch("./sample.xml")
-    .then((response) => response.text())
-    .then((xml) => {
-      const status = document.getElementById("status");
-      const isEdited = xml.includes("<edited>true</edited>");
-
-      if (isEdited) {
-        alert("Edited XML");
-        status.textContent = "Status: Served from cache (Edited)";
-      } else {
-        alert("Unedited XML");
-        status.textContent = "Status: Served from cache (Unedited)";
-      }
-    })
-    .catch((error) => {
-      console.error("Error fetching XML:", error);
-      alert("Error fetching XML");
-      document.getElementById("status").textContent = "Status: Error fetching XML";
-    });
+async function fetchXML() {
+  try {
+    const response = await fetch("./sample.xml", { cache: "reload" });
+    const text = await response.text();
+    console.log("Fetched XML:", text);
+    document.getElementById("content").innerText = text;
+  } catch (error) {
+    console.error("Error fetching XML:", error);
+  }
 }
 
-function editXML() {
-  fetch("./sample.xml")
-    .then((response) => response.text())
-    .then((xml) => {
-      const editedXml = xml.replace("<edited>false</edited>", "<edited>true</edited>");
+async function updateCache() {
+  const newContent = `
+    <root>
+      <data>Updated Data</data>
+    </root>
+  `;
 
-      // Update the cache with the edited XML
-      caches
-        .open("xml-cache-v1")
-        .then((cache) => {
-          const editedResponse = new Response(editedXml, { headers: { "Content-Type": "application/xml" } });
-          return cache.put("./sample.xml", editedResponse).then(() => {
-            console.log("Edited XML cached");
-            alert("XML edited successfully");
-          });
-        })
-        .catch((error) => console.error("Error caching edited XML:", error));
-    })
-    .catch((error) => console.error("Error editing XML:", error));
+  const blob = new Blob([newContent], { type: "application/xml" });
+  const response = new Response(blob, {
+    headers: { "Content-Type": "application/xml" },
+  });
+
+  const cache = await caches.open("v1");
+  await cache.put("./sample.xml", response);
+
+  alert("Cache updated with edited XML");
 }
 
-// Register service worker
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker
-    .register("./sw.js")
-    .then((registration) => {
-      console.log("Service Worker registered with scope:", registration.scope);
-    })
-    .catch((error) => {
-      console.error("Service Worker registration failed:", error);
-    });
-}
+document.getElementById("fetchXML").addEventListener("click", fetchXML);
+document.getElementById("updateCache").addEventListener("click", updateCache);
