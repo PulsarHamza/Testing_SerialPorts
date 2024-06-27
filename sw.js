@@ -1,25 +1,45 @@
+const CACHE_NAME = "xml-cache-v1";
+const urlsToCache = [
+  "./",
+  "./index.html",
+  "./style.css",
+  "./app.js",
+  "./sample.xml", // Path to your XML file
+];
+
+// Install event
 self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open("v1").then((cache) => cache.addAll(["./", "./index.html", "./style.css", "./app.js", "./sample.xml"]))
-  );
+  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(urlsToCache)));
+  self.console.log("Installed!");
 });
 
+// Fetch event
 self.addEventListener("fetch", (event) => {
-  if (event.request.url.endsWith("./sample.xml")) {
+  const requestUrl = new URL(event.request.url);
+
+  if (requestUrl.pathname.endsWith("sample.xml")) {
+    self.console.log("URL matched!");
     event.respondWith(
-      caches.match(event.request).then((response) => {
-        if (response) {
-          self.console.log("Serving from cache:", event.request.url);
-          return response;
-        } else {
-          self.console.log("Fetching from network:", event.request.url);
-          return fetch(event.request).then((networkResponse) => {
-            return caches.open("v1").then((cache) => {
+      caches.open(CACHE_NAME).then((cache) => {
+        return cache.match(event.request).then((response) => {
+          if (response) {
+            self.console.log("From cache!");
+            return response;
+          } else {
+            return fetch(event.request).then((networkResponse) => {
               cache.put(event.request, networkResponse.clone());
+              self.console.log("Network response!");
               return networkResponse;
             });
-          });
-        }
+          }
+        });
+      })
+    );
+  } else {
+    event.respondWith(
+      caches.match(event.request).then((response) => {
+        self.console.log("Path URL not match!");
+        return response || fetch(event.request);
       })
     );
   }
