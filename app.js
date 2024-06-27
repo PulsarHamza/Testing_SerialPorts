@@ -46,15 +46,16 @@ async function downloadXML() {
   caches.open("xml-cache-v1").then((cache) => {
     cache.match("./sample.xml").then((response) => {
       if (response) {
-        const blob = response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.style.display = "none";
-        a.href = url;
-        a.download = "filename.xml"; // Specify the filename
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
+        response.blob().then((blob) => {
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.style.display = "none";
+          a.href = url;
+          a.download = "filename.extension"; // Specify the filename
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(url);
+        });
       } else {
         console.error("File not found in cache");
       }
