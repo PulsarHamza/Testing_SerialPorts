@@ -42,23 +42,24 @@ function editXML() {
 }
 
 function downloadXML() {
-  const form = document.createElement("form");
-  form.style.display = "none"; // Hide the form
+  const url = "./sample.xml"; // Replace with your XML file URL
 
-  // Specify the URL of the XML file to download
-  form.action = "./sample.xml"; // Replace with your XML file URL
+  // Create an <a> element to trigger the download
+  const anchor = document.createElement("a");
+  anchor.style.display = "none";
+  anchor.href = url;
 
-  // Set method as 'GET' or 'POST' depending on your server setup
-  form.method = "GET";
+  // Set the download attribute and optionally specify a filename
+  anchor.setAttribute("download", "sample.xml");
 
-  // Append the form to the document body
-  document.body.appendChild(form);
+  // Append the anchor element to the document body
+  document.body.appendChild(anchor);
 
-  // Submit the form
-  form.submit();
+  // Trigger the click event to initiate download
+  anchor.click();
 
-  // Clean up: remove the form from the body after submission
-  document.body.removeChild(form);
+  // Clean up: remove the anchor from the body after download
+  document.body.removeChild(anchor);
 }
 
 // Register service worker
