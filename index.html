@@ -4,16 +4,25 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>XML Caching Example</title>
+  <title>Service Worker Cache Example</title>
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-  <h1>XML Caching Example</h1>
-  <button onclick="fetchXML()">Fetch XML</button>
-  <button onclick="editXML()">Edit XML</button>
-  <p id="status">Status: Waiting for action</p>
+  <h1>Service Worker Cache Example</h1>
+  <button id="fetchXML">Fetch XML</button>
+  <button id="updateCache">Update Cache</button>
+  <pre id="content"></pre>
   <script src="app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').then((registration) => {
+        console.log('Service Worker registered with scope:', registration.scope);
+      }).catch((error) => {
+        console.error('Service Worker registration failed:', error);
+      });
+    }
+  </script>
 </body>
 
 </html>
