@@ -13,34 +13,55 @@ self.addEventListener("install", (event) => {
   self.console.log("Installed!");
 });
 
-// Fetch event
-self.addEventListener("fetch", (event) => {
-  const requestUrl = new URL(event.request.url);
+// // Fetch event
+// self.addEventListener("fetch", (event) => {
+//   const requestUrl = new URL(event.request.url);
 
+//   if (requestUrl.pathname.endsWith(".xml")) {
+//     self.console.log("URL matched!");
+//     event.respondWith(
+//       caches.open(CACHE_NAME).then((cache) => {
+//         return cache.match(event.request).then((response) => {
+//           if (response) {
+//             self.console.log("From cache!");
+//             return response;
+//           }
+//         });
+//       })
+//     );
+//   } else {
+//     event.respondWith(
+//       caches.match(event.request).then((response) => {
+//         self.console.log("From network!");
+//         return response || fetch(event.request);
+//       })
+//     );
+//   }
+// });
+
+self.addEventListener("fetch", (event) => {
+  // Let the browser do its default thing
+  // for non-GET requests.
+  if (event.request.method !== "GET") return;
+
+  const requestUrl = new URL(event.request.url);
   if (requestUrl.pathname.endsWith(".xml")) {
-    self.console.log("URL matched!");
     event.respondWith(
-      caches.open(CACHE_NAME).then((cache) => {
-        return cache.match(event.request).then((response) => {
-          if (response) {
-            self.console.log("From cache!");
-            return response;
-          } else {
-            return fetch(event.request).then((networkResponse) => {
-              cache.put(event.request, networkResponse.clone());
-              self.console.log("Network response!");
-              return networkResponse;
-            });
-          }
-        });
-      })
-    );
-  } else {
-    event.respondWith(
-      caches.match(event.request).then((response) => {
-        self.console.log("Path URL not match!");
-        return response || fetch(event.request);
-      })
+      (async () => {
+        // Try to get the response from a cache.
+        const cache = await caches.open(CACHE_NAME);
+        const cachedResponse = await cache.match(event.request);
+
+        if (cachedResponse) {
+          // If we found a match in the cache, return it, but also
+          // update the entry in the cache in the background.
+          //event.waitUntil(cache.add(event.request));
+          return cachedResponse;
+        }
+
+        // If we didn't find a match in the cache, use the network.
+        return fetch(event.request);
+      })()
     );
   }
 });
