@@ -61,7 +61,28 @@ function editXML() {
     })
     .catch((error) => console.error("Error editing XML:", error));
 }
-
+function check_cache() {
+  // Check if "./sample1.xml" exists in the cache
+  caches
+    .open("xml-cache-v1")
+    .then((cache) => {
+      cache
+        .has("./sample1.xml")
+        .then((hasEntry) => {
+          if (hasEntry) {
+            console.log("./sample1.xml exists in the cache");
+          } else {
+            console.log("./sample1.xml does not exist in the cache");
+          }
+        })
+        .catch((err) => {
+          console.error("Error checking cache:", err);
+        });
+    })
+    .catch((err) => {
+      console.error("Error opening cache:", err);
+    });
+}
 // Register service worker
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker
