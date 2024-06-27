@@ -41,25 +41,25 @@ function editXML() {
     .catch((error) => console.error("Error editing XML:", error));
 }
 
-function downloadXML() {
-  const url = "./sample.xml"; // Replace with your XML file URL
-
-  // Create an <a> element to trigger the download
-  const anchor = document.createElement("a");
-  anchor.style.display = "none";
-  anchor.href = url;
-
-  // Set the download attribute and optionally specify a filename
-  anchor.setAttribute("download", "sample.xml");
-
-  // Append the anchor element to the document body
-  document.body.appendChild(anchor);
-
-  // Trigger the click event to initiate download
-  anchor.click();
-
-  // Clean up: remove the anchor from the body after download
-  document.body.removeChild(anchor);
+async function downloadXML() {
+  // Check if the file is cached
+  caches.open("xml-cache-v1").then((cache) => {
+    cache.match("./sample.xml").then((response) => {
+      if (response) {
+        const blob = response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.style.display = "none";
+        a.href = url;
+        a.download = "filename.xml"; // Specify the filename
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+      } else {
+        console.error("File not found in cache");
+      }
+    });
+  });
 }
 
 // Register service worker
